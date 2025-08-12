@@ -1,22 +1,46 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
+/* Light mode */
 :root {
-  --background-color: #020101;
+  --background-color: #001f3f;
+  /* navy */
   --myRed: #e50914;
-  --myWithe: #ffffff;
+  --myWhite: #ffffff;
+  --mylime: #01FF70;
+
+  --text-color: var(--myWhite);
+  --hover-color: var(--mylime);
+
 }
 
+/* Dark mode */
+.dark {
+  --background-color: #020101;
+  /* nero */
+  --text-color: var(--myWhite);
+  /* bianco in dark */
+  --hover-color: var(--myRed);
+  /* rosso in dark */
+}
+
+/* Classi helper */
 .bg-color {
   background-color: var(--background-color);
+  transition: background-color 0.3s ease;
 }
 
-.text-myred {
-  color: var(--myRed);
+.text-color {
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
-.text-mywhite {
-  color: var(--myWithe);
+.hover-color:hover {
+  color: var(--hover-color);
+  transition: color 0.3s ease;
 }
+
+
 
 body {
   background: var(--background-color);
