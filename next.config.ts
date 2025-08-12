@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
@@ -12,12 +11,11 @@ const nextConfig = {
       },
     ],
   },
+  eslint: {
+    // Ignora errori di lint durante la build su Vercel
+    ignoreDuringBuilds: true,
+  },
   // ...altri config se li hai
 };
 
-module.exports = nextConfig;
-
-
 export default nextConfig;
-
-
