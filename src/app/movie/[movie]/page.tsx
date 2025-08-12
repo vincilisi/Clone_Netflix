@@ -8,10 +8,15 @@ interface Props {
     };
 }
 
-export default async function MoviePage({ params }: Props) {
+export default async function MoviePage({
+    params,
+}: {
+    params: { movie: string };
+}) {
     const type = params.movie;
 
     if (type === 'film') return <VetrinaFilm />;
     if (type === 'serie-tv') return <VetrinaSerieTV />;
     return notFound();
 }
+
