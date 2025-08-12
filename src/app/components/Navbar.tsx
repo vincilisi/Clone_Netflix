@@ -1,14 +1,16 @@
+import Image from 'next/image';
 import Link from "next/link";
 
 export default function Navbar() {
     return (
-        <nav className="flex items-center justify-start px-6 bg-color mt-2">
+        <nav className="flex items-center justify-start px-6 bg-color mt-3">
             <div className="logo ">
                 <Link href="/" className="cursor-pointer">
-                    <img
-                        src="https://fontmeme.com/permalink/250811/038709b3ee858bb72921dd653a3fb6bb.png"
-                        alt="netflix-font"
-                        className="h-12"
+                    <Image
+                        src="/images/logo.png"
+                        alt='netflix-logo'
+                        width={50}
+                        height={50}
                     />
                 </Link>
             </div>
