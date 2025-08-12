@@ -8,7 +8,7 @@ interface Props {
     };
 }
 
-export default function MoviePage({ params }: Props) {
+export default async function MoviePage({ params }: Props) {
     const type = params.movie;
 
     if (type === 'film') return <VetrinaFilm />;
