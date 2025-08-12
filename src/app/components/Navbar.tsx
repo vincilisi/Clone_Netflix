@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from "next/link";
 
 export default function Navbar() {
+    const film = 'film';
+    const serietv = 'serie-tv'
     return (
         <nav className="flex items-center justify-start px-6 bg-color mt-3">
             <div className="logo ">
@@ -26,15 +28,16 @@ export default function Navbar() {
                     </a>
                     <ul className="absolute hidden group-hover:block top-full left-0 bg-color rounded shadow-md min-w-[140px] p-2 z-50">
                         <li>
-                            <a href="#" className="block px-4 py-2 hover:bg-[#330000] rounded">
+                            <Link href={`/movie/${film}`} className="font-semibold custom-link cursor-pointer">
                                 Film
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a href="#" className="block px-4 py-2 hover:bg-[#330000] rounded">
+                            <Link href={`/movie/${serietv}`} className="font-semibold custom-link cursor-pointer">
                                 Serie TV
-                            </a>
+                            </Link>
                         </li>
+
                     </ul>
                 </li>
                 <li className="relative group">

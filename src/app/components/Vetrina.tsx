@@ -6,7 +6,6 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import Link from 'next/link';
 
 interface Item {
     id: number;
@@ -121,9 +120,9 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                 pagination={{ clickable: true }}
             >
                 {items.map((item) => (
-                    <SwiperSlide key={`${item.media_type}-${item.id}`}>
-                        <Link
-                            href={`/${item.media_type}/${item.id}`}
+                    <SwiperSlide key={item.id}>
+                        <a
+                            href={`/${item.media_type === 'movie' ? 'movies' : 'tv'}/${item.id}`}
                             className="block hover:scale-[1.02] transition-transform duration-200"
                         >
                             <div className="bg-gray-800 rounded-lg overflow-hidden h-[300px] flex flex-col">
@@ -135,19 +134,16 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                                 />
                                 <div className="relative group p-2 flex-grow flex items-center justify-center text-center text-sm overflow-hidden whitespace-nowrap text-ellipsis max-w-full text-white">
                                     <span className="truncate">{item.title}</span>
-
-                                    {/* Tooltip */}
                                     <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 max-w-xs whitespace-normal text-center">
                                         {item.title}
                                     </div>
                                 </div>
-
-
                             </div>
-                        </Link>
+                        </a>
                     </SwiperSlide>
                 ))}
             </Swiper>
         </div>
     );
 }
+
