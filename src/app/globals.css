@@ -28,3 +28,10 @@ body {
 .custom-link:hover {
   color: var(--myRed);
 }
+
+/* movies */
+
+.mt-custom {
+  margin-top: 5rem;
+  margin-right: 7rem;
+}

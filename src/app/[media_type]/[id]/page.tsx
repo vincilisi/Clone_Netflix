@@ -52,7 +52,7 @@ export default async function DetailPage({ params }: Params) {
         : '/placeholder.png';
 
     return (
-        <main className="max-w-4xl mx-auto p-6 text-white">
+        <main className="max-w-4xl mx-auto p-6 text-white mt-custom">
             <h1 className="text-3xl font-bold mb-4">{title} {year && `(${year})`}</h1>
             <div className="flex flex-col md:flex-row gap-6">
                 <div className="relative w-full md:w-full h-[320px]">
