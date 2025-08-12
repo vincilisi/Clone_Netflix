@@ -133,9 +133,16 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                                     className="w-full h-[200px] object-cover"
                                     loading="lazy"
                                 />
-                                <div className="p-2 text-white flex-grow flex items-center justify-center text-center text-sm truncate">
-                                    {item.title}
+                                <div className="relative group p-2 flex-grow flex items-center justify-center text-center text-sm overflow-hidden whitespace-nowrap text-ellipsis max-w-full text-white">
+                                    <span className="truncate">{item.title}</span>
+
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 max-w-xs whitespace-normal text-center">
+                                        {item.title}
+                                    </div>
                                 </div>
+
+
                             </div>
                         </Link>
                     </SwiperSlide>
