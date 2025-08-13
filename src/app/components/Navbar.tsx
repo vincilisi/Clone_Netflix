@@ -9,6 +9,17 @@ export default function Navbar() {
     const film = 'film';
     const serietv = 'serie-tv';
     const [menuOpen, setMenuOpen] = useState(false); // hamburger mobile
+    const [dropdownOpen, setDropdownOpen] = useState<{ [key: string]: boolean }>({
+        list: false,
+        account: false
+    });
+
+    const toggleDropdown = (name: string) => {
+        setDropdownOpen(prev => ({
+            ...prev,
+            [name]: !prev[name]
+        }));
+    }
 
     return (
         <nav className="relative flex items-center justify-between px-6 bg-color mt-3">
@@ -46,10 +57,14 @@ export default function Navbar() {
 
                 {/* La mia lista - dropdown */}
                 <li className="relative group">
-                    <button className="font-semibold hover-color cursor-pointer bg-transparent border-none w-full text-left md:w-auto md:text-center">
+                    <button
+                        className="font-semibold hover-color cursor-pointer bg-transparent border-none w-full text-left md:w-auto md:text-center"
+                        onClick={() => toggleDropdown('list')}
+                    >
                         La mia lista
                     </button>
-                    <ul className="absolute left-0 md:top-full md:left-0 bg-color rounded shadow-md min-w-[140px] p-2 z-50 hidden group-hover:block">
+                    <ul className={`absolute left-0 md:top-full md:left-0 bg-color rounded shadow-md min-w-[140px] p-2 z-50
+                        ${dropdownOpen.list ? 'block' : 'hidden'} md:group-hover:block`}>
                         <li>
                             <Link href={`/movie/${film}`} className="font-semibold hover-color cursor-pointer block px-2 py-1 rounded">
                                 Film
@@ -65,10 +80,14 @@ export default function Navbar() {
 
                 {/* Account - dropdown */}
                 <li className="relative group">
-                    <button className="font-semibold hover-color cursor-pointer bg-transparent border-none w-full text-left md:w-auto md:text-center">
+                    <button
+                        className="font-semibold hover-color cursor-pointer bg-transparent border-none w-full text-left md:w-auto md:text-center"
+                        onClick={() => toggleDropdown('account')}
+                    >
                         Account
                     </button>
-                    <ul className="absolute left-0 md:top-full md:left-0 bg-color rounded shadow-md min-w-[140px] p-2 z-50 hidden group-hover:block">
+                    <ul className={`absolute left-0 md:top-full md:left-0 bg-color rounded shadow-md min-w-[140px] p-2 z-50
+                        ${dropdownOpen.account ? 'block' : 'hidden'} md:group-hover:block`}>
                         <li>
                             <a href="#" className="block px-4 py-2 hover:bg-[#330000] rounded">
                                 Login
