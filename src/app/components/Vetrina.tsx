@@ -115,24 +115,29 @@ function Section({ title, items }: { title: string; items: Item[] }) {
             <Swiper
                 modules={[Navigation]}
                 spaceBetween={20}
-                slidesPerView={items.length < 5 ? items.length : 5}
                 navigation
                 pagination={{ clickable: true }}
+                breakpoints={{
+                    0: { slidesPerView: 2 },       // Smartphone
+                    640: { slidesPerView: 3 },     // Tablet
+                    1024: { slidesPerView: 4 },    // Laptop
+                    1280: { slidesPerView: 5 },    // Desktop grandi
+                }}
             >
                 {items.map((item) => (
-                    <SwiperSlide key={item.id}>
+                    <SwiperSlide key={item.id} className="flex justify-center">
                         <a
                             href={`/${item.media_type === 'movie' ? 'movies' : 'tv'}/${item.id}`}
                             className="block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden h-[300px] flex flex-col">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-full max-w-[200px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}
-                                    className="w-full h-[200px] object-cover"
+                                    className="w-full object-cover aspect-[2/3]"
                                     loading="lazy"
                                 />
-                                <div className="relative group p-2 flex-grow flex items-center justify-center text-center text-sm overflow-hidden whitespace-nowrap text-ellipsis max-w-full text-white">
+                                <div className="relative group p-2 flex-grow flex items-center justify-center text-center text-sm text-white">
                                     <span className="truncate">{item.title}</span>
                                     <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 max-w-xs whitespace-normal text-center">
                                         {item.title}
@@ -146,4 +151,3 @@ function Section({ title, items }: { title: string; items: Item[] }) {
         </div>
     );
 }
-
