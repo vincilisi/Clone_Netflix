@@ -58,12 +58,12 @@ export default function Navbar() {
               ${dropdownOpen.list ? 'block' : 'hidden'} md:block md:opacity-0 md:group-hover:opacity-100 md:pointer-events-auto transition-opacity duration-200`}
                     >
                         <li>
-                            <Link href="/movies/film" className="block px-2 py-1 hover:text-[#FFD700]">
+                            <Link href="/movie/film" className="block px-2 py-1 hover:text-[#FFD700]">
                                 Film
                             </Link>
                         </li>
                         <li>
-                            <Link href="/tv/serie-tv" className="block px-2 py-1 hover:text-[#FFD700]">
+                            <Link href="/movie/serie-tv" className="block px-2 py-1 hover:text-[#FFD700]">
                                 Serie TV
                             </Link>
                         </li>
