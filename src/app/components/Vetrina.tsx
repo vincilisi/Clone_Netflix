@@ -130,7 +130,7 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                             href={`/${item.media_type === 'movie' ? 'movies' : 'tv'}/${item.id}`}
                             className="block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-full max-w-[200px]">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-full max-w-[500px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}

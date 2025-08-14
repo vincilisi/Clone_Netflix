@@ -95,7 +95,7 @@ export default function VetrinaFilm() {
     if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
 
     return (
-        <div className="w-full px-4 space-y-12 mt-8">
+        <div className="w-full px-4 space-y-12 mt-8 text-center">
             {genres.map((genre) => (
                 <Section
                     key={genre.id}
@@ -129,11 +129,11 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                             href={`/${item.media_type}s/${item.id}`}
                             className="block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[300px] md:h-[320px] lg:h-[300px]">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[500px] lg:h-[500px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}
-                                    className="w-full h-[200px] object-cover md:h-[220px] lg:h-[200px]"
+                                    className="w-full h-[500px] object-cover md:h-[500px] lg:h-[500px]"
                                     loading="lazy"
                                 />
                                 <div className="p-2 flex-grow flex items-center justify-center text-center text-sm text-white">
