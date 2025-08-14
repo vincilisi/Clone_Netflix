@@ -31,7 +31,6 @@ export default function VetrinaFilm() {
 
     function mapToItem(data: any): Item | null {
         if (!data.title || !data.poster_path) return null;
-
         return {
             id: data.id,
             title: data.title,
@@ -44,7 +43,6 @@ export default function VetrinaFilm() {
         async function fetchGenresAndFilms() {
             try {
                 setLoading(true);
-
                 const genreRes = await fetch(
                     `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=it-IT`
                 );
@@ -56,25 +54,19 @@ export default function VetrinaFilm() {
 
                 for (const genre of genreList) {
                     const allItems: Item[] = [];
-
                     const firstRes = await fetch(
                         `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`
                     );
                     const firstData = await firstRes.json();
                     const totalPages = Math.min(firstData.total_pages, 5);
-
-                    if (firstData.results) {
-                        allItems.push(...firstData.results.map(mapToItem).filter(Boolean));
-                    }
+                    if (firstData.results) allItems.push(...firstData.results.map(mapToItem).filter(Boolean));
 
                     for (let page = 2; page <= totalPages; page++) {
                         const res = await fetch(
                             `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=${page}`
                         );
                         const data = await res.json();
-                        if (data.results) {
-                            allItems.push(...data.results.map(mapToItem).filter(Boolean));
-                        }
+                        if (data.results) allItems.push(...data.results.map(mapToItem).filter(Boolean));
                     }
 
                     const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
@@ -99,11 +91,11 @@ export default function VetrinaFilm() {
         fetchGenresAndFilms();
     }, []);
 
-    if (loading) return <div className="text-white text-center">Caricamento...</div>;
-    if (error) return <div className="text-red-500 text-center">{error}</div>;
+    if (loading) return <div className="text-white text-center py-20">Caricamento...</div>;
+    if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
 
     return (
-        <div className="w-full px-4 space-y-12 mt-8 text-center">
+        <div className="w-full px-4 space-y-12 mt-8">
             {genres.map((genre) => (
                 <Section
                     key={genre.id}
@@ -122,9 +114,14 @@ function Section({ title, items }: { title: string; items: Item[] }) {
             <Swiper
                 modules={[Navigation]}
                 spaceBetween={20}
-                slidesPerView={items.length < 5 ? items.length : 5}
                 navigation
-                pagination={{ clickable: true }}
+                breakpoints={{
+                    320: { slidesPerView: 1 },   // mobile
+                    480: { slidesPerView: 2 },   // small tablet
+                    768: { slidesPerView: 3 },   // tablet
+                    1024: { slidesPerView: 4 },  // laptop
+                    1280: { slidesPerView: 5 },  // desktop
+                }}
             >
                 {items.map((item) => (
                     <SwiperSlide key={`${title}-${item.id}`}>
@@ -132,11 +129,11 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                             href={`/${item.media_type}s/${item.id}`}
                             className="block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden h-[300px] flex flex-col">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[300px] md:h-[320px] lg:h-[300px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}
-                                    className="w-full h-[200px] object-cover"
+                                    className="w-full h-[200px] object-cover md:h-[220px] lg:h-[200px]"
                                     loading="lazy"
                                 />
                                 <div className="p-2 flex-grow flex items-center justify-center text-center text-sm text-white">

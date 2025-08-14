@@ -124,6 +124,12 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                 slidesPerView={items.length < 5 ? items.length : 5}
                 navigation
                 pagination={{ clickable: true }}
+                breakpoints={{
+                    320: { slidesPerView: 1 },   // schermi piccoli
+                    640: { slidesPerView: 2 },   // schermi medi piccoli
+                    768: { slidesPerView: 3 },   // tablet/medi
+                    1024: { slidesPerView: Math.min(items.length, 5) }, // grandi schermi
+                }}
             >
                 {items.map((item) => (
                     <SwiperSlide key={`${title}-${item.id}`}>
