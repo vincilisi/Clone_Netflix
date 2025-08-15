@@ -6,6 +6,7 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import PreviewModal from './previewModal';
 
 interface Item {
     id: number;
@@ -21,6 +22,7 @@ export default function Vetrina() {
     const [nowTV, setNowTV] = useState<Item[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
     const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const BASE_URL = 'https://api.themoviedb.org/3';
@@ -45,28 +47,24 @@ export default function Vetrina() {
                     `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=it-IT&page=1`
                 );
                 const dataPopMovies = await resPopMovies.json();
-                if (!dataPopMovies.results) throw new Error('Film popolari non trovati');
                 setPopMovies(dataPopMovies.results.slice(0, 10).map((f: any) => mapToItem(f)));
 
                 const resPopTV = await fetch(
                     `${BASE_URL}/tv/popular?api_key=${API_KEY}&language=it-IT&page=1`
                 );
                 const dataPopTV = await resPopTV.json();
-                if (!dataPopTV.results) throw new Error('Serie TV popolari non trovate');
                 setPopTV(dataPopTV.results.slice(0, 10).map((tv: any) => mapToItem(tv, true)));
 
                 const resNowMovies = await fetch(
                     `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=it-IT&page=1`
                 );
                 const dataNowMovies = await resNowMovies.json();
-                if (!dataNowMovies.results) throw new Error('Film del momento non trovati');
                 setNowMovies(dataNowMovies.results.slice(0, 5).map((f: any) => mapToItem(f)));
 
                 const resNowTV = await fetch(
                     `${BASE_URL}/tv/on_the_air?api_key=${API_KEY}&language=it-IT&page=1`
                 );
                 const dataNowTV = await resNowTV.json();
-                if (!dataNowTV.results) throw new Error('Serie TV del momento non trovate');
                 setNowTV(dataNowTV.results.slice(0, 5).map((tv: any) => mapToItem(tv, true)));
 
                 setError(null);
@@ -78,57 +76,60 @@ export default function Vetrina() {
         }
 
         if (!API_KEY) {
-            setError('API Key TMDB non trovata. Controlla .env.local e che sia NEXT_PUBLIC_TMDB_API_KEY');
+            setError('API Key TMDB non trovata. Controlla .env.local');
             setLoading(false);
             return;
         }
 
         fetchData();
+
+
+        const oneDay = 24 * 60 * 60 * 1000;
+        const interval = setInterval(fetchData, oneDay);
+
+        return () => clearInterval(interval);
     }, [API_KEY]);
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-red-500">{error}</div>;
 
-    if (
-        popMovies.length === 0 &&
-        popTV.length === 0 &&
-        nowMovies.length === 0 &&
-        nowTV.length === 0
-    ) {
-        return <div>Nessun dato ricevuto</div>;
-    }
-
     return (
         <div className="w-full px-4 space-y-10">
-            <Section title="Film Popolari" items={popMovies} />
-            <Section title="Serie TV Popolari" items={popTV} />
-            <Section title="Film del Momento" items={nowMovies} />
-            <Section title="Serie TV del Momento" items={nowTV} />
+            <Section title="Film Popolari" items={popMovies} onItemClick={setSelectedItem} />
+            <Section title="Serie TV Popolari" items={popTV} onItemClick={setSelectedItem} />
+            <Section title="Film del Momento" items={nowMovies} onItemClick={setSelectedItem} />
+            <Section title="Serie TV del Momento" items={nowTV} onItemClick={setSelectedItem} />
+
+            {selectedItem && (
+                <PreviewModal
+                    item={selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
+            )}
         </div>
     );
 }
 
-function Section({ title, items }: { title: string; items: Item[] }) {
+function Section({ title, items, onItemClick }: { title: string; items: Item[]; onItemClick: (item: Item) => void }) {
     return (
-        <div>
+        <div className='text-center'>
             <h2 className="text-white text-xl font-bold mb-4">{title}</h2>
             <Swiper
                 modules={[Navigation]}
                 spaceBetween={20}
                 navigation
-                pagination={{ clickable: true }}
                 breakpoints={{
-                    0: { slidesPerView: 2 },       // Smartphone
-                    640: { slidesPerView: 3 },     // Tablet
-                    1024: { slidesPerView: 4 },    // Laptop
-                    1280: { slidesPerView: 5 },    // Desktop grandi
+                    0: { slidesPerView: 2 },
+                    640: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                    1280: { slidesPerView: 5 },
                 }}
             >
                 {items.map((item) => (
                     <SwiperSlide key={item.id} className="flex justify-center">
-                        <a
-                            href={`/${item.media_type === 'movie' ? 'movies' : 'tv'}/${item.id}`}
-                            className="block hover:scale-[1.02] transition-transform duration-200"
+                        <div
+                            onClick={() => onItemClick(item)}
+                            className='cursor-pointer block hover:scale-[1.02] transition-transform duration-200'
                         >
                             <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-full max-w-[500px]">
                                 <img
@@ -144,7 +145,7 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                                     </div>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     </SwiperSlide>
                 ))}
             </Swiper>
