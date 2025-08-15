@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Vetrina from "@/app/components/Vetrina";
+import Footer from './components/footer';
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-centers">
       <h1 className="flex justify-center items-center mt-8">
         <Image
           src="/images/titolo.png"
@@ -13,6 +14,7 @@ export default function Home() {
         />
       </h1>
       <Vetrina />
+      <Footer />
     </div>
   );
 }
