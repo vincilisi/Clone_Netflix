@@ -14,8 +14,12 @@ export default function AuthPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
 
+    // Solo client-side
     useEffect(() => {
+        setMounted(true);
+
         const param = searchParams.get('mode');
         if (param === 'register') setMode('register');
         else setMode('login');
@@ -25,26 +29,37 @@ export default function AuthPage() {
         setLoading(true);
         setError(null);
 
-        if (mode === 'login') {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) setError(error.message);
-            else router.push('/account');
-        } else {
-            const { error } = await supabase.auth.signUp({ email, password });
-            if (error) setError(error.message);
-            else router.push('/account');
+        try {
+            if (mode === 'login') {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                router.push('/account');
+            } else {
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) throw error;
+                router.push('/account');
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     const handleGoogle = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: `${window.location.origin}/account` },
-        });
-        if (error) setError(error.message);
+        try {
+            if (typeof window === 'undefined') return;
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: `${window.location.origin}/account` },
+            });
+            if (error) throw error;
+        } catch (err: any) {
+            setError(err.message);
+        }
     };
+
+    if (!mounted) return null; // evita prerender Netlify
 
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-black text-white px-4">
