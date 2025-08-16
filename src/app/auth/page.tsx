@@ -1,113 +1,38 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function AuthPage() {
-    const supabase = createClientComponentClient();
-    const router = useRouter();
+function AuthContent() {
     const searchParams = useSearchParams();
-
-    const [mode, setMode] = useState<'login' | 'register'>('login');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [mounted, setMounted] = useState(false);
-
-    // Solo client-side
-    useEffect(() => {
-        setMounted(true);
-
-        const param = searchParams.get('mode');
-        if (param === 'register') setMode('register');
-        else setMode('login');
-    }, [searchParams]);
-
-    const handleAuth = async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            if (mode === 'login') {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                router.push('/account');
-            } else {
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) throw error;
-                router.push('/account');
-            }
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGoogle = async () => {
-        try {
-            if (typeof window === 'undefined') return;
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: `${window.location.origin}/account` },
-            });
-            if (error) throw error;
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
-    if (!mounted) return null; // evita prerender Netlify
+    const error = searchParams.get("error");
+    const success = searchParams.get("success");
 
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-black text-white px-4">
-            <h1 className="text-3xl font-bold mb-8">{mode === 'login' ? 'Accedi' : 'Registrati'}</h1>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+            <h1 className="text-3xl font-bold mb-6">Authentication Page</h1>
 
-            <div className="flex flex-col gap-4 w-full max-w-sm">
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="p-3 rounded bg-gray-800 text-white"
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="p-3 rounded bg-gray-800 text-white"
-                />
+            {error && (
+                <p className="text-red-500 mb-4">❌ Error: {error}</p>
+            )}
+            {success && (
+                <p className="text-green-500 mb-4">✅ Success: {success}</p>
+            )}
 
-                {error && <p className="text-red-500">{error}</p>}
-
-                <button
-                    onClick={handleAuth}
-                    disabled={loading}
-                    className="bg-red-600 hover:bg-red-700 p-3 rounded font-bold transition-colors"
-                >
-                    {loading ? 'Caricamento...' : mode === 'login' ? 'Accedi' : 'Registrati'}
+            <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-sm text-center">
+                <p className="mb-4">Qui puoi fare login o registrarti.</p>
+                <button className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-semibold">
+                    Login con Google
                 </button>
-
-                <button
-                    onClick={handleGoogle}
-                    className="bg-white text-black p-3 rounded font-bold mt-2 transition-colors"
-                >
-                    Continua con Google
-                </button>
-
-                <p className="text-gray-400 text-sm mt-2">
-                    {mode === 'login' ? "Non hai un account?" : "Hai già un account?"}{' '}
-                    <button
-                        onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                        className="text-white underline"
-                    >
-                        {mode === 'login' ? 'Registrati' : 'Accedi'}
-                    </button>
-                </p>
             </div>
         </div>
+    );
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense fallback={<div className="text-center mt-20 text-white">Loading...</div>}>
+            <AuthContent />
+        </Suspense>
     );
 }
