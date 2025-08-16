@@ -7,18 +7,8 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-
-interface Item {
-    id: number;
-    title: string;
-    img: string;
-    media_type: 'movie';
-}
-
-interface Genre {
-    id: number;
-    name: string;
-}
+import PreviewModal from './previewModal';
+import { Item, Genre } from './types';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -29,13 +19,18 @@ export default function VetrinaFilm() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    function mapToItem(data: any): Item | null {
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [videoKey, setVideoKey] = useState<string | undefined>();
+
+    function mapToItem(data: any, genreName: string): Item | null {
         if (!data.title || !data.poster_path) return null;
         return {
             id: data.id,
             title: data.title,
             img: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
             media_type: 'movie',
+            overview: data.overview,
+            genre: genreName
         };
     }
 
@@ -43,9 +38,7 @@ export default function VetrinaFilm() {
         async function fetchGenresAndFilms() {
             try {
                 setLoading(true);
-                const genreRes = await fetch(
-                    `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=it-IT`
-                );
+                const genreRes = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=it-IT`);
                 const genreData = await genreRes.json();
                 const genreList: Genre[] = genreData.genres;
                 setGenres(genreList);
@@ -53,24 +46,9 @@ export default function VetrinaFilm() {
                 const results: Record<number, Item[]> = {};
 
                 for (const genre of genreList) {
-                    const allItems: Item[] = [];
-                    const firstRes = await fetch(
-                        `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`
-                    );
-                    const firstData = await firstRes.json();
-                    const totalPages = Math.min(firstData.total_pages, 5);
-                    if (firstData.results) allItems.push(...firstData.results.map(mapToItem).filter(Boolean));
-
-                    for (let page = 2; page <= totalPages; page++) {
-                        const res = await fetch(
-                            `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=${page}`
-                        );
-                        const data = await res.json();
-                        if (data.results) allItems.push(...data.results.map(mapToItem).filter(Boolean));
-                    }
-
-                    const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
-                    results[genre.id] = uniqueItems;
+                    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
+                    const data = await res.json();
+                    results[genre.id] = data.results.map((f: any) => mapToItem(f, genre.name)).filter(Boolean);
                 }
 
                 setFilmsByGenre(results);
@@ -91,6 +69,13 @@ export default function VetrinaFilm() {
         fetchGenresAndFilms();
     }, []);
 
+    async function fetchTrailer(item: Item) {
+        const res = await fetch(`${BASE_URL}/movie/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
+        const data = await res.json();
+        const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
+        setVideoKey(trailer ? trailer.key : undefined);
+    }
+
     if (loading) return <div className="text-white text-center py-20">Caricamento...</div>;
     if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
 
@@ -101,13 +86,25 @@ export default function VetrinaFilm() {
                     key={genre.id}
                     title={`🎬 ${genre.name}`}
                     items={filmsByGenre[genre.id] || []}
+                    onItemClick={(item) => { setSelectedItem(item); fetchTrailer(item); }}
                 />
             ))}
+
+            {selectedItem && (
+                <PreviewModal
+                    item={selectedItem}
+                    videoKey={videoKey}
+                    onClose={() => {
+                        setSelectedItem(null);
+                        setVideoKey(undefined);
+                    }}
+                />
+            )}
         </div>
     );
 }
 
-function Section({ title, items }: { title: string; items: Item[] }) {
+function Section({ title, items, onItemClick }: { title: string; items: Item[]; onItemClick: (item: Item) => void }) {
     return (
         <div>
             <h2 className="text-white text-2xl font-bold mb-4">{title}</h2>
@@ -116,18 +113,18 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                 spaceBetween={20}
                 navigation
                 breakpoints={{
-                    320: { slidesPerView: 1 },   // mobile
-                    480: { slidesPerView: 2 },   // small tablet
-                    768: { slidesPerView: 3 },   // tablet
-                    1024: { slidesPerView: 4 },  // laptop
-                    1280: { slidesPerView: 5 },  // desktop
+                    320: { slidesPerView: 1 },
+                    480: { slidesPerView: 2 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                    1280: { slidesPerView: 5 },
                 }}
             >
                 {items.map((item) => (
                     <SwiperSlide key={`${title}-${item.id}`}>
-                        <Link
-                            href={`/${item.media_type}s/${item.id}`}
-                            className="block hover:scale-[1.02] transition-transform duration-200"
+                        <div
+                            onClick={() => onItemClick(item)}
+                            className="cursor-pointer block hover:scale-[1.02] transition-transform duration-200"
                         >
                             <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[500px] lg:h-[500px]">
                                 <img
@@ -140,7 +137,7 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                                     <span className="truncate">{item.title}</span>
                                 </div>
                             </div>
-                        </Link>
+                        </div>
                     </SwiperSlide>
                 ))}
             </Swiper>

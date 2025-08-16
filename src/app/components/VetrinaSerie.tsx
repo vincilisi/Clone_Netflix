@@ -7,20 +7,11 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-
-interface Item {
-    id: number;
-    title: string;
-    img: string;
-    media_type: 'tv';
-}
-
-interface Genre {
-    id: number;
-    name: string;
-}
+import PreviewModal from './previewModal';
+import { Item, Genre } from './types';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const BASE_URL = 'https://api.themoviedb.org/3';
 
 export default function VetrinaSerieTV() {
     const [genres, setGenres] = useState<Genre[]>([]);
@@ -28,14 +19,18 @@ export default function VetrinaSerieTV() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    function mapToItem(data: any): Item | null {
-        if (!data.name || !data.poster_path) return null;
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [videoKey, setVideoKey] = useState<string | undefined>();
 
+    function mapToItem(data: any, genreName: string): Item | null {
+        if (!data.name || !data.poster_path) return null;
         return {
             id: data.id,
             title: data.name,
             img: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
             media_type: 'tv',
+            overview: data.overview,
+            genre: genreName
         };
     }
 
@@ -44,9 +39,7 @@ export default function VetrinaSerieTV() {
             try {
                 setLoading(true);
 
-                const genreRes = await fetch(
-                    `https://api.themoviedb.org/3/genre/tv/list?api_key=${API_KEY}&language=it-IT`
-                );
+                const genreRes = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=it-IT`);
                 const genreData = await genreRes.json();
                 const genreList: Genre[] = genreData.genres;
                 setGenres(genreList);
@@ -56,23 +49,19 @@ export default function VetrinaSerieTV() {
                 for (const genre of genreList) {
                     const allItems: Item[] = [];
 
-                    const firstRes = await fetch(
-                        `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`
-                    );
+                    const firstRes = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
                     const firstData = await firstRes.json();
                     const totalPages = Math.min(firstData.total_pages, 5);
 
                     if (firstData.results) {
-                        allItems.push(...firstData.results.map(mapToItem).filter(Boolean));
+                        allItems.push(...firstData.results.map((s: any) => mapToItem(s, genre.name)).filter(Boolean));
                     }
 
                     for (let page = 2; page <= totalPages; page++) {
-                        const res = await fetch(
-                            `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=${page}`
-                        );
+                        const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=${page}`);
                         const data = await res.json();
                         if (data.results) {
-                            allItems.push(...data.results.map(mapToItem).filter(Boolean));
+                            allItems.push(...data.results.map((s: any) => mapToItem(s, genre.name)).filter(Boolean));
                         }
                     }
 
@@ -98,8 +87,15 @@ export default function VetrinaSerieTV() {
         fetchGenresAndSeries();
     }, []);
 
-    if (loading) return <div className="text-white text-center">Caricamento...</div>;
-    if (error) return <div className="text-red-500 text-center">{error}</div>;
+    async function fetchTrailer(item: Item) {
+        const res = await fetch(`${BASE_URL}/tv/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
+        const data = await res.json();
+        const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
+        setVideoKey(trailer ? trailer.key : undefined);
+    }
+
+    if (loading) return <div className="text-white text-center py-20">Caricamento...</div>;
+    if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
 
     return (
         <div className="w-full px-4 space-y-12 mt-8 text-center">
@@ -108,34 +104,44 @@ export default function VetrinaSerieTV() {
                     key={genre.id}
                     title={`📺 ${genre.name}`}
                     items={seriesByGenre[genre.id] || []}
+                    onItemClick={(item) => { setSelectedItem(item); fetchTrailer(item); }}
                 />
             ))}
+
+            {selectedItem && (
+                <PreviewModal
+                    item={selectedItem}
+                    videoKey={videoKey}
+                    onClose={() => {
+                        setSelectedItem(null);
+                        setVideoKey(undefined);
+                    }}
+                />
+            )}
         </div>
     );
 }
 
-function Section({ title, items }: { title: string; items: Item[] }) {
+function Section({ title, items, onItemClick }: { title: string; items: Item[]; onItemClick: (item: Item) => void }) {
     return (
         <div>
             <h2 className="text-white text-2xl font-bold mb-4">{title}</h2>
             <Swiper
                 modules={[Navigation]}
                 spaceBetween={20}
-                slidesPerView={items.length < 5 ? items.length : 5}
                 navigation
-                pagination={{ clickable: true }}
                 breakpoints={{
-                    320: { slidesPerView: 1 },   // schermi piccoli
-                    640: { slidesPerView: 2 },   // schermi medi piccoli
-                    768: { slidesPerView: 3 },   // tablet/medi
-                    1024: { slidesPerView: Math.min(items.length, 5) }, // grandi schermi
+                    320: { slidesPerView: 1 },
+                    640: { slidesPerView: 2 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: Math.min(items.length, 5) },
                 }}
             >
                 {items.map((item) => (
                     <SwiperSlide key={`${title}-${item.id}`}>
-                        <Link
-                            href={`/${item.media_type}/${item.id}`}
-                            className="block hover:scale-[1.02] transition-transform duration-200"
+                        <div
+                            onClick={() => onItemClick(item)}
+                            className="cursor-pointer block hover:scale-[1.02] transition-transform duration-200"
                         >
                             <div className="bg-gray-800 rounded-lg overflow-hidden h-[300px] flex flex-col">
                                 <img
@@ -148,7 +154,7 @@ function Section({ title, items }: { title: string; items: Item[] }) {
                                     <span className="truncate">{item.title}</span>
                                 </div>
                             </div>
-                        </Link>
+                        </div>
                     </SwiperSlide>
                 ))}
             </Swiper>
