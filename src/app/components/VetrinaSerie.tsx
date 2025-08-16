@@ -39,7 +39,7 @@ export default function VetrinaSerieTV() {
             try {
                 setLoading(true);
 
-                const genreRes = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=it-IT`);
+                const genreRes = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=en-EN`);
                 const genreData = await genreRes.json();
                 const genreList: Genre[] = genreData.genres;
                 setGenres(genreList);
@@ -49,7 +49,7 @@ export default function VetrinaSerieTV() {
                 for (const genre of genreList) {
                     const allItems: Item[] = [];
 
-                    const firstRes = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
+                    const firstRes = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=en-EN&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
                     const firstData = await firstRes.json();
                     const totalPages = Math.min(firstData.total_pages, 5);
 
@@ -58,7 +58,7 @@ export default function VetrinaSerieTV() {
                     }
 
                     for (let page = 2; page <= totalPages; page++) {
-                        const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=${page}`);
+                        const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=en-EN&with_genres=${genre.id}&sort_by=popularity.desc&page=${page}`);
                         const data = await res.json();
                         if (data.results) {
                             allItems.push(...data.results.map((s: any) => mapToItem(s, genre.name)).filter(Boolean));
@@ -88,7 +88,7 @@ export default function VetrinaSerieTV() {
     }, []);
 
     async function fetchTrailer(item: Item) {
-        const res = await fetch(`${BASE_URL}/tv/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
+        const res = await fetch(`${BASE_URL}/tv/${item.id}/videos?api_key=${API_KEY}&language=en-EN`);
         const data = await res.json();
         const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
         setVideoKey(trailer ? trailer.key : undefined);
@@ -143,11 +143,11 @@ function Section({ title, items, onItemClick }: { title: string; items: Item[]; 
                             onClick={() => onItemClick(item)}
                             className="cursor-pointer block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden h-[300px] flex flex-col">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[500px] lg:h-[500px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}
-                                    className="w-full h-[200px] object-cover"
+                                    className="w-full h-[500px] object-cover md:h-[500px] lg:h-[500px]"
                                     loading="lazy"
                                 />
                                 <div className="p-2 flex-grow flex items-center justify-center text-center text-sm text-white">

@@ -38,7 +38,7 @@ export default function VetrinaFilm() {
         async function fetchGenresAndFilms() {
             try {
                 setLoading(true);
-                const genreRes = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=it-IT`);
+                const genreRes = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=en-EN`);
                 const genreData = await genreRes.json();
                 const genreList: Genre[] = genreData.genres;
                 setGenres(genreList);
@@ -46,7 +46,7 @@ export default function VetrinaFilm() {
                 const results: Record<number, Item[]> = {};
 
                 for (const genre of genreList) {
-                    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
+                    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-EN&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
                     const data = await res.json();
                     results[genre.id] = data.results.map((f: any) => mapToItem(f, genre.name)).filter(Boolean);
                 }
@@ -70,7 +70,7 @@ export default function VetrinaFilm() {
     }, []);
 
     async function fetchTrailer(item: Item) {
-        const res = await fetch(`${BASE_URL}/movie/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
+        const res = await fetch(`${BASE_URL}/movie/${item.id}/videos?api_key=${API_KEY}&language=en-EN`);
         const data = await res.json();
         const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
         setVideoKey(trailer ? trailer.key : undefined);
@@ -126,7 +126,7 @@ function Section({ title, items, onItemClick }: { title: string; items: Item[]; 
                             onClick={() => onItemClick(item)}
                             className="cursor-pointer block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[500px] lg:h-[500px]">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[300px] lg:h-[500px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}
