@@ -11,10 +11,13 @@ const nextConfig = {
     ],
   },
   eslint: {
-    // Ignora errori di lint durante la build su Vercel
+    // Ignora errori di lint durante la build su Netlify
     ignoreDuringBuilds: true,
   },
-  // ...altri config se li hai
+  experimental: {
+    appDir: true, // App Router
+  },
+  output: 'standalone', // per Netlify
 };
 
 module.exports = nextConfig;
