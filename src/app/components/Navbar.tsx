@@ -14,8 +14,31 @@ export default function Navbar() {
     });
     const [mounted, setMounted] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
     const navRef = useRef<HTMLElement>(null);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    // Funzione per aggiornare user + profile
+    const fetchUserAndProfile = async () => {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            setProfile(profileData);
+        } else {
+            setProfile(null);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -33,12 +56,12 @@ export default function Navbar() {
         };
         document.addEventListener('mousedown', handleClickOutside);
 
-        // Recupera utente corrente
-        supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
+        // Recupera utente e profilo appena montata la navbar
+        fetchUserAndProfile();
 
-        // Listener login/logout
-        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
+        // Listener login/logout (aggiorna sempre)
+        const { data: listener } = supabase.auth.onAuthStateChange(() => {
+            fetchUserAndProfile();
         });
 
         return () => {
@@ -59,19 +82,23 @@ export default function Navbar() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         setUser(null);
+        setProfile(null);
     };
 
     if (!mounted) return null;
 
     return (
-        <nav ref={navRef} className="relative flex items-center justify-between px-6 py-3 bg-color text-color">
+        <nav
+            ref={navRef}
+            className="relative flex items-center justify-between px-6 py-3 bg-color text-color"
+        >
             <Link href="/" className="cursor-pointer" onClick={handleLinkClick}>
                 <Image src="/images/logo.png" alt="logo" width={50} height={50} />
             </Link>
 
             {/* Hamburger */}
             <button
-                className="lg:hidden flex flex-col justify-center items-center gap-1 bg-white"
+                className="lg:hidden flex flex-col justify-center items-center gap-1"
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label="Menu"
             >
@@ -103,7 +130,11 @@ export default function Navbar() {
                         La mia lista
                     </button>
                     <ul
-                        className={`absolute left-0 rounded shadow-md min-w-[140px] p-2 z-50 bg-color transition-opacity duration-200 ${dropdownOpen.list ? 'block' : isTouchDevice ? 'hidden' : 'lg:block lg:opacity-0 lg:group-hover:opacity-100 lg:pointer-events-auto'
+                        className={`absolute left-0 rounded shadow-md min-w-[140px] p-2 z-50 bg-color transition-opacity duration-200 ${dropdownOpen.list
+                            ? 'block'
+                            : isTouchDevice
+                                ? 'hidden'
+                                : 'lg:block lg:opacity-0 lg:group-hover:opacity-100 lg:pointer-events-auto'
                             }`}
                     >
                         <li>
@@ -132,10 +163,14 @@ export default function Navbar() {
                         className="font-semibold bg-transparent border-none w-full text-left lg:w-auto lg:text-center text-color hover-color"
                         onClick={() => toggleDropdown('account')}
                     >
-                        {user ? user.email : 'Account'}
+                        {profile?.username || user?.email || 'Account'}
                     </button>
                     <ul
-                        className={`absolute left-0 rounded shadow-md min-w-[140px] p-2 z-50 bg-color transition-opacity duration-200 ${dropdownOpen.account ? 'block' : isTouchDevice ? 'hidden' : 'lg:block lg:opacity-0 lg:group-hover:opacity-100 lg:pointer-events-auto'
+                        className={`absolute left-0 rounded shadow-md min-w-[140px] p-2 z-50 bg-color transition-opacity duration-200 ${dropdownOpen.account
+                            ? 'block'
+                            : isTouchDevice
+                                ? 'hidden'
+                                : 'lg:block lg:opacity-0 lg:group-hover:opacity-100 lg:pointer-events-auto'
                             }`}
                     >
                         {user ? (
