@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function AuthContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -25,7 +27,7 @@ export default function AuthContent() {
                 if (error) throw error;
 
                 if (data.user) {
-                    // crea profilo
+                    // crea profilo in tabella profiles
                     await supabase.from('profiles').insert({
                         id: data.user.id,
                         username: email.split('@')[0],
@@ -37,6 +39,7 @@ export default function AuthContent() {
                 if (error) throw error;
             }
 
+            // redirect alla home
             router.push('/');
         } catch (err: any) {
             setErrorMsg(err.message);
@@ -59,14 +62,28 @@ export default function AuthContent() {
                     required
                 />
 
-                <input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full p-2 rounded bg-gray-800 text-white"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
+                <div className="relative">
+                    <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Password"
+                        className="w-full p-2 rounded bg-gray-800 text-white pr-10"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <button
+                        type="button"
+                        className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-white"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                    >
+                        {showPassword ? (
+                            <EyeSlashIcon className="h-5 w-5" />
+                        ) : (
+                            <EyeIcon className="h-5 w-5" />
+                        )}
+                    </button>
+                </div>
 
                 {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
 
