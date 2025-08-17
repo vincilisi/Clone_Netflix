@@ -1,4 +1,4 @@
-interface MoviePageProps {
+export interface MoviePageProps {
     params: {
         movie: string;
     };

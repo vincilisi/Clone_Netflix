@@ -6,12 +6,6 @@ import { Genre, Item } from '@/app/components/types';
 const API_KEY = process.env.TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-interface MoviePageProps {
-    params: {
-        movie: string;
-    };
-}
-
 function mapToItem(data: any, genreName: string, isTV = false): Item | null {
     const title = isTV ? data.name : data.title;
     if (!title || !data.poster_path) return null;
@@ -25,7 +19,7 @@ function mapToItem(data: any, genreName: string, isTV = false): Item | null {
     };
 }
 
-export default async function MoviePage({ params }: MoviePageProps) {
+export default async function MoviePage({ params }: { params: { movie: string } }) {
     const type = params.movie;
 
     if (type === 'film') {
