@@ -2,6 +2,7 @@ import VetrinaFilm from '@/app/components/VetrinaFilm';
 import VetrinaSerieTV from '@/app/components/VetrinaSerie';
 import { notFound } from 'next/navigation';
 import { Genre, Item } from '@/app/components/types';
+import { MoviePageProps } from '@/app/components/moviepage';
 
 const API_KEY = process.env.TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -19,8 +20,9 @@ function mapToItem(data: any, genreName: string, isTV = false): Item | null {
     };
 }
 
-export default async function MoviePage({ params }: { params: { movie: string } }) {
+const MoviePage = async ({ params }: { params: { movie: string } }) => {
     const type = params.movie;
+
 
     if (type === 'film') {
         const genreRes = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=it-IT`, { cache: 'no-store' });
@@ -57,4 +59,5 @@ export default async function MoviePage({ params }: { params: { movie: string } 
     }
 
     return notFound();
-}
+};
+export default MoviePage as any;
