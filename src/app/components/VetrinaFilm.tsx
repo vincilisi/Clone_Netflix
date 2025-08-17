@@ -1,83 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
+import PreviewModal from './previewModal';
+import { Item, Genre } from './types';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import PreviewModal from './previewModal';
-import { Item, Genre } from './types';
 
-const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-const BASE_URL = 'https://api.themoviedb.org/3';
-
-export default function VetrinaFilm() {
-    const [genres, setGenres] = useState<Genre[]>([]);
-    const [filmsByGenre, setFilmsByGenre] = useState<Record<number, Item[]>>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
+export default function VetrinaFilm({
+    genres,
+    filmsByGenre
+}: {
+    genres: Genre[];
+    filmsByGenre: Record<number, Item[]>;
+}) {
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [videoKey, setVideoKey] = useState<string | undefined>();
 
-    function mapToItem(data: any, genreName: string): Item | null {
-        if (!data.title || !data.poster_path) return null;
-        return {
-            id: data.id,
-            title: data.title,
-            img: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
-            media_type: 'movie',
-            overview: data.overview,
-            genre: genreName
-        };
-    }
-
-    useEffect(() => {
-        async function fetchGenresAndFilms() {
-            try {
-                setLoading(true);
-                const genreRes = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=en-EN`);
-                const genreData = await genreRes.json();
-                const genreList: Genre[] = genreData.genres;
-                setGenres(genreList);
-
-                const results: Record<number, Item[]> = {};
-
-                for (const genre of genreList) {
-                    const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-EN&with_genres=${genre.id}&sort_by=popularity.desc&page=1`);
-                    const data = await res.json();
-                    results[genre.id] = data.results.map((f: any) => mapToItem(f, genre.name)).filter(Boolean);
-                }
-
-                setFilmsByGenre(results);
-                setError(null);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Errore sconosciuto');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (!API_KEY) {
-            setError('API Key TMDB non trovata. Controlla .env.local');
-            setLoading(false);
-            return;
-        }
-
-        fetchGenresAndFilms();
-    }, []);
+    const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    const BASE_URL = 'https://api.themoviedb.org/3';
 
     async function fetchTrailer(item: Item) {
-        const res = await fetch(`${BASE_URL}/movie/${item.id}/videos?api_key=${API_KEY}&language=en-EN`);
+        const res = await fetch(`${BASE_URL}/movie/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
         const data = await res.json();
         const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
         setVideoKey(trailer ? trailer.key : undefined);
     }
-
-    if (loading) return <div className="text-white text-center py-20">Caricamento...</div>;
-    if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
 
     return (
         <div className="w-full px-4 space-y-12 mt-8 text-center">
@@ -104,7 +53,15 @@ export default function VetrinaFilm() {
     );
 }
 
-function Section({ title, items, onItemClick }: { title: string; items: Item[]; onItemClick: (item: Item) => void }) {
+function Section({
+    title,
+    items,
+    onItemClick
+}: {
+    title: string;
+    items: Item[];
+    onItemClick: (item: Item) => void;
+}) {
     return (
         <div>
             <h2 className="text-white text-2xl font-bold mb-4">{title}</h2>
@@ -114,10 +71,9 @@ function Section({ title, items, onItemClick }: { title: string; items: Item[]; 
                 navigation
                 breakpoints={{
                     320: { slidesPerView: 1 },
-                    480: { slidesPerView: 2 },
+                    640: { slidesPerView: 2 },
                     768: { slidesPerView: 3 },
-                    1024: { slidesPerView: 4 },
-                    1280: { slidesPerView: 5 },
+                    1024: { slidesPerView: Math.min(items.length, 5) },
                 }}
             >
                 {items.map((item) => (
@@ -126,7 +82,7 @@ function Section({ title, items, onItemClick }: { title: string; items: Item[]; 
                             onClick={() => onItemClick(item)}
                             className="cursor-pointer block hover:scale-[1.02] transition-transform duration-200"
                         >
-                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[300px] lg:h-[500px]">
+                            <div className="bg-gray-800 rounded-lg overflow-hidden flex flex-col h-[600px] md:h-[500px] lg:h-[500px]">
                                 <img
                                     src={item.img}
                                     alt={item.title}
