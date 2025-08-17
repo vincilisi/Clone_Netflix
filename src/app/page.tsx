@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Vetrina from "@/app/components/Vetrina";
-import Footer from './components/footer';
 
 export default function Home() {
   return (

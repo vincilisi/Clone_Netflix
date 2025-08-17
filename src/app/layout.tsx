@@ -1,22 +1,17 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+// src/app/layout.tsx
 import "./globals.css";
-import Navbar from "@/app/components/Navbar";
-import Footer from "./components/footer";
-
-export const metadata: Metadata = {
-  title: "WolfFlix",
-  description: "Guarda film e serie con Supabase e Next.js",
-};
+import Navbar from "./components/Navbar"
+import Footer from "./components/footer"
+import { ThemeProvider } from "./components/ThemeContext";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="it">
+      <body className="bg-black text-white min-h-screen flex flex-col">
         <Navbar />
-        {children}
+        <ThemeProvider>
+          <main className="flex-1">{children}</main>
+        </ThemeProvider>
         <Footer />
       </body>
     </html>

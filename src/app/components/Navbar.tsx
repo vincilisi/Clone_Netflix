@@ -1,226 +1,110 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import ThemeToggle from './ThemeToggle';
-import { supabase } from '../../lib/supabaseClient';
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Navbar() {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [dropdownOpen, setDropdownOpen] = useState<{ [key: string]: boolean }>({
-        list: false,
-        account: false,
-    });
-    const [mounted, setMounted] = useState(false);
     const [user, setUser] = useState<any>(null);
-    const [profile, setProfile] = useState<any>(null);
-    const navRef = useRef<HTMLElement>(null);
-    const [isTouchDevice, setIsTouchDevice] = useState(false);
-
-    // Funzione per aggiornare user + profile
-    const fetchUserAndProfile = async () => {
-        const {
-            data: { session },
-        } = await supabase.auth.getSession();
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-
-            setProfile(profileData);
-        } else {
-            setProfile(null);
-        }
-    };
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setMounted(true);
-
-        const touchCheck =
-            typeof window !== 'undefined' &&
-            (navigator.maxTouchPoints > 0 || /iPad|iPhone|Android/.test(navigator.userAgent));
-        setIsTouchDevice(touchCheck);
-
-        const handleClickOutside = (event: MouseEvent) => {
-            if (navRef.current && !navRef.current.contains(event.target as Node)) {
-                setMenuOpen(false);
-                setDropdownOpen({ list: false, account: false });
-            }
+        const getUser = async () => {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) console.error('Errore nel recupero utente:', error);
+            setUser(user);
         };
-        document.addEventListener('mousedown', handleClickOutside);
 
-        // Recupera utente e profilo appena montata la navbar
-        fetchUserAndProfile();
+        getUser();
 
-        // Listener login/logout (aggiorna sempre)
-        const { data: listener } = supabase.auth.onAuthStateChange(() => {
-            fetchUserAndProfile();
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
         });
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            listener.subscription.unsubscribe();
+            authListener?.subscription.unsubscribe();
         };
     }, []);
 
-    const toggleDropdown = (name: string) => {
-        setDropdownOpen((prev) => ({ ...prev, [name]: !prev[name] }));
-    };
-
-    const handleLinkClick = () => {
-        setMenuOpen(false);
-        setDropdownOpen({ list: false, account: false });
-    };
+    // Chiudi dropdown se clicchi fuori
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         setUser(null);
-        setProfile(null);
+        setDropdownOpen(false);
     };
 
-    if (!mounted) return null;
-
     return (
-        <nav
-            ref={navRef}
-            className="relative flex items-center justify-between px-6 py-3 bg-color text-color"
-        >
-            <Link href="/" className="cursor-pointer" onClick={handleLinkClick}>
-                <Image src="/images/logo.png" alt="logo" width={50} height={50} />
+        <nav className="bg-color text-color px-6 py-4 flex justify-between items-center relative transition-colors duration-300">
+            {/* Logo */}
+            <Link href="/" className="text-xl font-bold hover-color">
+                WolfFlix
             </Link>
 
-            {/* Hamburger */}
-            <button
-                className="lg:hidden flex flex-col justify-center items-center gap-1"
-                onClick={() => setMenuOpen(!menuOpen)}
-                aria-label="Menu"
-            >
-                <span className="block w-6 h-0.5 bg-color"></span>
-                <span className="block w-6 h-0.5 bg-color"></span>
-                <span className="block w-6 h-0.5 bg-color"></span>
-            </button>
+            {/* Menu centrale */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex space-x-6 text-sm">
+                <Link href="/" className="hover-color transition">Home</Link>
+                <Link href="/movie/film" className="hover-color transition">Film</Link>
+                <Link href="/movie/serie-tv" className="hover-color transition">Serie TV</Link>
+            </div>
 
-            {/* Menu links */}
-            <ul
-                className={`flex-col lg:flex-row list-none gap-6 absolute lg:static top-full left-0 w-full lg:w-auto p-4 lg:p-0 transition-all z-40 bg-color ${menuOpen ? 'flex' : 'hidden'
-                    } lg:flex`}
-            >
-                <li>
-                    <Link
-                        href="/"
-                        className="font-semibold block py-1 lg:py-0 text-color hover-color"
-                        onClick={handleLinkClick}
-                    >
-                        Home
-                    </Link>
-                </li>
-
-                <li className="relative group">
-                    <button
-                        className="font-semibold bg-transparent border-none w-full text-left lg:w-auto lg:text-center text-color hover-color"
-                        onClick={() => toggleDropdown('list')}
-                    >
-                        La mia lista
-                    </button>
-                    <ul
-                        className={`absolute left-0 rounded shadow-md min-w-[140px] p-2 z-50 bg-color transition-opacity duration-200 ${dropdownOpen.list
-                            ? 'block'
-                            : isTouchDevice
-                                ? 'hidden'
-                                : 'lg:block lg:opacity-0 lg:group-hover:opacity-100 lg:pointer-events-auto'
-                            }`}
-                    >
-                        <li>
-                            <Link
-                                href="/movie/film"
-                                className="block px-2 py-1 text-color hover-color"
-                                onClick={handleLinkClick}
-                            >
-                                Film
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/movie/serie-tv"
-                                className="block px-2 py-1 text-color hover-color"
-                                onClick={handleLinkClick}
-                            >
-                                Serie TV
-                            </Link>
-                        </li>
-                    </ul>
-                </li>
-
-                <li className="relative group">
-                    <button
-                        className="font-semibold bg-transparent border-none w-full text-left lg:w-auto lg:text-center text-color hover-color"
-                        onClick={() => toggleDropdown('account')}
-                    >
-                        {profile?.username || user?.email || 'Account'}
-                    </button>
-                    <ul
-                        className={`absolute left-0 rounded shadow-md min-w-[140px] p-2 z-50 bg-color transition-opacity duration-200 ${dropdownOpen.account
-                            ? 'block'
-                            : isTouchDevice
-                                ? 'hidden'
-                                : 'lg:block lg:opacity-0 lg:group-hover:opacity-100 lg:pointer-events-auto'
-                            }`}
-                    >
-                        {user ? (
-                            <>
-                                <li>
-                                    <Link
-                                        href="/account"
-                                        className="block px-4 py-2 text-color hover-color"
-                                        onClick={handleLinkClick}
-                                    >
-                                        Profilo
-                                    </Link>
-                                </li>
-                                <li>
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full text-left px-4 py-2 text-color hover-color"
-                                    >
-                                        Logout
-                                    </button>
-                                </li>
-                            </>
-                        ) : (
-                            <>
-                                <li>
-                                    <Link
-                                        href="/auth?mode=login"
-                                        className="block px-4 py-2 text-color hover-color"
-                                        onClick={handleLinkClick}
-                                    >
-                                        Login
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="/auth?mode=register"
-                                        className="block px-4 py-2 text-color hover-color"
-                                        onClick={handleLinkClick}
-                                    >
-                                        Register
-                                    </Link>
-                                </li>
-                            </>
-                        )}
-                    </ul>
-                </li>
-            </ul>
-
-            <div className="ml-auto lg:ml-4">
+            {/* Utente + Tema a destra */}
+            <div className="flex items-center space-x-4" ref={dropdownRef}>
                 <ThemeToggle />
+
+                {user ? (
+                    <div className="relative">
+                        <button
+                            onClick={() => setDropdownOpen((prev) => !prev)}
+                            className="flex items-center space-x-2 hover-color text-sm"
+                        >
+                            <span>Benvenuto, {user.email}</span>
+                            <ChevronDownIcon className="h-4 w-4" />
+                        </button>
+
+                        {dropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-40 text-sm z-50 bg-color border border-gray-600 rounded shadow-lg">
+                                <Link
+                                    href="/profile"
+                                    className="block px-4 py-2 hover-color"
+                                    onClick={() => setDropdownOpen(false)}
+                                >
+                                    Profilo
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full text-left px-4 py-2 hover-color"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <Link
+                        href="/auth"
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"
+                    >
+                        Login
+                    </Link>
+                )}
             </div>
         </nav>
     );
