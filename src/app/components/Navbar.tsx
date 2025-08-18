@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
@@ -70,8 +70,9 @@ export default function Navbar() {
                 {user ? (
                     <div className="relative">
                         <button
-                            onClick={() => setDropdownOpen((prev) => !prev)}
+                            onClick={() => setDropdownOpen(prev => !prev)}
                             className="flex items-center space-x-2 hover-color text-sm"
+                            aria-label="Apri menu utente"
                         >
                             <span>Benvenuto, {user.email}</span>
                             <ChevronDownIcon className="h-4 w-4" />
@@ -89,6 +90,7 @@ export default function Navbar() {
                                 <button
                                     onClick={handleLogout}
                                     className="w-full text-left px-4 py-2 hover-color"
+                                    aria-label="Logout"
                                 >
                                     Logout
                                 </button>
@@ -99,6 +101,7 @@ export default function Navbar() {
                     <Link
                         href="/auth"
                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"
+                        aria-label="Login"
                     >
                         Login
                     </Link>
@@ -107,7 +110,8 @@ export default function Navbar() {
                 {/* Hamburger mobile */}
                 <button
                     className="md:hidden text-white focus:outline-none"
-                    onClick={() => setMobileMenuOpen((prev) => !prev)}
+                    onClick={() => setMobileMenuOpen(prev => !prev)}
+                    aria-label={mobileMenuOpen ? "Chiudi menu" : "Apri menu"}
                 >
                     {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
                 </button>
