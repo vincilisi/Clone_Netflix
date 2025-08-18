@@ -1,7 +1,9 @@
-import VetrinaFilm from '@/app/components/VetrinaFilm';
-import VetrinaSerieTV from '@/app/components/VetrinaSerie';
+// src/app/movie/[movie]/page.tsx
+import Vetrina from '@/app/components/VetrinaFilm&SrieTV';
 import { notFound } from 'next/navigation';
 import { Genre, Item } from '@/app/components/types';
+
+export const dynamic = 'force-dynamic'; // forza SSR dinamico
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -9,7 +11,6 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 function mapToItem(data: any, genreName: string, isTV = false): Item | null {
     const title = isTV ? data.name : data.title;
     if (!title || !data.poster_path) return null;
-
     return {
         id: data.id,
         title,
@@ -20,59 +21,43 @@ function mapToItem(data: any, genreName: string, isTV = false): Item | null {
     };
 }
 
-async function fetchByGenre(endpoint: string, genres: Genre[], isTV = false) {
-    const result: Record<number, Item[]> = {};
-    for (const genre of genres) {
-        const res = await fetch(
-            `${BASE_URL}/discover/${endpoint}?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`
-        );
-        const data = await res.json();
-        const items =
-            data.results?.map((d: any) => mapToItem(d, genre.name, isTV)).filter(Boolean) || [];
-        result[genre.id] = items;
-    }
-    return result;
+interface MoviePageProps {
+    params: Promise<{ movie: string }>;
 }
 
-const MoviePage = async ({ params }: { params: { movie: string } }) => {
-    const type = params.movie; // ✅ params è già un oggetto normale
+const MoviePage = async ({ params }: MoviePageProps) => {
+    const resolvedParams = await params; // ✅ await obbligatorio
+    const type = resolvedParams?.movie;
 
-    if (!API_KEY) {
-        throw new Error('NEXT_PUBLIC_TMDB_API_KEY non è definita nelle variabili d\'ambiente');
-    }
+    if (!type || (type !== 'film' && type !== 'serie-tv')) return notFound();
+    if (!API_KEY) throw new Error('NEXT_PUBLIC_TMDB_API_KEY non definita');
 
-    if (!type || (type !== 'film' && type !== 'serie-tv')) {
-        return notFound();
-    }
+    const isTV = type === 'serie-tv';
 
     try {
-        if (type === 'film') {
-            const genreRes = await fetch(
-                `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=it-IT`,
+        const genreRes = await fetch(
+            `${BASE_URL}/genre/${isTV ? 'tv' : 'movie'}/list?api_key=${API_KEY}&language=it-IT`,
+            { cache: 'no-store' }
+        );
+        const genreData = await genreRes.json();
+        const genres: Genre[] = genreData.genres || [];
+
+        const itemsByGenre: Record<number, Item[]> = {};
+        for (const genre of genres) {
+            const res = await fetch(
+                `${BASE_URL}/discover/${isTV ? 'tv' : 'movie'}?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`,
                 { cache: 'no-store' }
             );
-            const genreData = await genreRes.json();
-            const genres: Genre[] = genreData.genres || [];
-            const filmsByGenre = await fetchByGenre('movie', genres);
-            return <VetrinaFilm genres={genres} itemsByGenre={filmsByGenre} />;
+            const data = await res.json();
+            const items = data.results?.map((d: any) => mapToItem(d, genre.name, isTV)).filter(Boolean) || [];
+            itemsByGenre[genre.id] = items;
         }
 
-        if (type === 'serie-tv') {
-            const genreRes = await fetch(
-                `${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=it-IT`,
-                { cache: 'no-store' }
-            );
-            const genreData = await genreRes.json();
-            const genres: Genre[] = genreData.genres || [];
-            const seriesByGenre = await fetchByGenre('tv', genres, true);
-            return <VetrinaSerieTV genres={genres} seriesByGenre={seriesByGenre} />;
-        }
-    } catch (error) {
-        console.error('Errore nel rendering della pagina:', error);
+        return <Vetrina genres={genres} itemsByGenre={itemsByGenre} isTV={isTV} />;
+    } catch (err) {
+        console.error('Errore nel rendering della pagina:', err);
         return notFound();
     }
-
-    return notFound();
 };
 
 export default MoviePage;

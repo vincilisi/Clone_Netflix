@@ -8,13 +8,13 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
-export default function VetrinaSerieTV({
-    genres,
-    seriesByGenre
-}: {
+type VetrinaProps = {
     genres: Genre[];
-    seriesByGenre: Record<number, Item[]>;
-}) {
+    itemsByGenre: Record<number, Item[]>;
+    isTV?: boolean;
+};
+
+export default function Vetrina({ genres, itemsByGenre, isTV = false }: VetrinaProps) {
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [videoKey, setVideoKey] = useState<string | undefined>();
 
@@ -22,22 +22,34 @@ export default function VetrinaSerieTV({
     const BASE_URL = 'https://api.themoviedb.org/3';
 
     async function fetchTrailer(item: Item) {
-        const res = await fetch(`${BASE_URL}/tv/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
-        const data = await res.json();
-        const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
-        setVideoKey(trailer ? trailer.key : undefined);
+        try {
+            const endpoint = isTV ? 'tv' : 'movie';
+            const res = await fetch(`${BASE_URL}/${endpoint}/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
+            const data = await res.json();
+            const trailer = data.results?.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
+            setVideoKey(trailer ? trailer.key : undefined);
+        } catch (err) {
+            console.error('Errore nel fetch del trailer:', err);
+        }
     }
 
     return (
         <div className="w-full px-4 space-y-12 mt-8 text-center">
-            {genres.map((genre) => (
-                <Section
-                    key={genre.id}
-                    title={`📺 ${genre.name}`}
-                    items={seriesByGenre[genre.id] || []}
-                    onItemClick={(item) => { setSelectedItem(item); fetchTrailer(item); }}
-                />
-            ))}
+            {genres.map((genre) => {
+                const items = itemsByGenre[genre.id] || [];
+                if (items.length === 0) return null; // salta generi senza film/serie
+                return (
+                    <Section
+                        key={genre.id}
+                        title={`${isTV ? '📺' : '🎬'} ${genre.name}`}
+                        items={items}
+                        onItemClick={(item) => {
+                            setSelectedItem(item);
+                            fetchTrailer(item);
+                        }}
+                    />
+                );
+            })}
 
             {selectedItem && (
                 <PreviewModal
@@ -53,15 +65,7 @@ export default function VetrinaSerieTV({
     );
 }
 
-function Section({
-    title,
-    items,
-    onItemClick
-}: {
-    title: string;
-    items: Item[];
-    onItemClick: (item: Item) => void;
-}) {
+function Section({ title, items, onItemClick }: { title: string; items: Item[]; onItemClick: (item: Item) => void }) {
     return (
         <div>
             <h2 className="text-white text-2xl font-bold mb-4">{title}</h2>

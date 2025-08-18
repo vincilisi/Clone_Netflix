@@ -1,4 +1,4 @@
-import VetrinaFilm from '@/app/components/VetrinaFilm';
+import VetrinaFilm from '@/app/components/VetrinaFilm&SrieTV';
 import { Genre, Item } from '@/app/components/types';
 
 const API_KEY = process.env.TMDB_API_KEY;
