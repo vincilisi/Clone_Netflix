@@ -1,4 +1,4 @@
-'use client';
+// src/app/movie/[movie]/page.tsx
 import VetrinaFilm from '@/app/components/VetrinaFilm';
 import VetrinaSerieTV from '@/app/components/VetrinaSerie';
 import { notFound } from 'next/navigation';
@@ -49,7 +49,7 @@ const MoviePage = async ({ params }: { params: { movie: string } }) => {
                 filmsByGenre[genre.id] = items;
             }
 
-            return <VetrinaFilm genres={genres} filmsByGenre={filmsByGenre} />;
+            return <VetrinaFilm genres={genres} itemsByGenre={filmsByGenre} />;
         }
 
         if (type === 'serie-tv') {
