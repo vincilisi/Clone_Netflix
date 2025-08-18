@@ -1,4 +1,4 @@
-import VetrinaSerieTV from '@/app/components/VetrinaSerie';
+import VetrinaSerieTV from '@/app/components/VetrinaFilm&SrieTV';
 import { Genre, Item } from '@/app/components/types';
 
 const API_KEY = process.env.TMDB_API_KEY;
@@ -30,5 +30,5 @@ export default async function SerieTVPage() {
         seriesByGenre[genre.id] = items;
     }
 
-    return <VetrinaSerieTV genres={genres} seriesByGenre={seriesByGenre} />;
+    return <VetrinaSerieTV genres={genres} itemsByGenre={seriesByGenre} />;
 }

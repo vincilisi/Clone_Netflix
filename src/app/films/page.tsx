@@ -30,5 +30,5 @@ export default async function FilmPage() {
         filmsByGenre[genre.id] = items;
     }
 
-    return <VetrinaFilm genres={genres} filmsByGenre={filmsByGenre} />;
+    return <VetrinaFilm genres={genres} itemsByGenre={filmsByGenre} />;
 }
