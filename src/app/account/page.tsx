@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export default function AccountPage() {
     // Avatar fissi predefiniti
@@ -179,12 +180,14 @@ export default function AccountPage() {
                     </div>
 
                     <div className="sm:col-span-2 flex justify-between items-center">
-                        <button
-                            type="button"
-                            className="px-6 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition"
-                        >
-                            Salva modifiche
-                        </button>
+                        <Link href="./profile">
+                            <button
+                                type="button"
+                                className="px-6 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition"
+                            >
+                                Salva modifiche
+                            </button>
+                        </Link>
                         <button
                             type="button"
                             className="px-6 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition"
