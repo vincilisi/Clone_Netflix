@@ -42,3 +42,6 @@ next-env.d.ts
 
 /src/generated/prisma
 public/images/Dieta_Mensile_Accelerata.pdf
+
+# Local Netlify folder
+.netlify

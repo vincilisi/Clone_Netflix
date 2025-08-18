@@ -19,9 +19,9 @@ function mapToItem(data: any, genreName: string, isTV = false): Item | null {
     };
 }
 
-// ✅ Tipizzazione interna, export forzato come any
-const MoviePage = async ({ params }: { params: { movie: string } }) => {
-    const type = params.movie;
+const MoviePage = async ({ params }: { params: any }) => {
+    const resolvedParams = await params; // ✅ await params
+    const type = resolvedParams.movie;
 
     if (!type || (type !== 'film' && type !== 'serie-tv')) {
         return notFound();
@@ -37,7 +37,6 @@ const MoviePage = async ({ params }: { params: { movie: string } }) => {
             const genres: Genre[] = genreData.genres || [];
 
             const filmsByGenre: Record<number, Item[]> = {};
-
             for (const genre of genres) {
                 const res = await fetch(
                     `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`
@@ -60,7 +59,6 @@ const MoviePage = async ({ params }: { params: { movie: string } }) => {
             const genres: Genre[] = genreData.genres || [];
 
             const seriesByGenre: Record<number, Item[]> = {};
-
             for (const genre of genres) {
                 const res = await fetch(
                     `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=it-IT&with_genres=${genre.id}&sort_by=popularity.desc&page=1`
@@ -81,5 +79,4 @@ const MoviePage = async ({ params }: { params: { movie: string } }) => {
     return notFound();
 };
 
-// ✅ Export forzato per aggirare il bug di validazione
 export default MoviePage as any;
