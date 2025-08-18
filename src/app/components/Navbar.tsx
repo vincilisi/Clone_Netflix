@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import ThemeToggle from './ThemeToggle';
+import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import ThemeToggle from "./ThemeToggle";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,24 +14,22 @@ const supabase = createClient(
 export default function Navbar() {
     const [user, setUser] = useState<any>(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const getUser = async () => {
             const { data: { user }, error } = await supabase.auth.getUser();
-            if (error) console.error('Errore nel recupero utente:', error);
+            if (error) console.error("Errore nel recupero utente:", error);
             setUser(user);
         };
-
         getUser();
 
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
         });
 
-        return () => {
-            authListener?.subscription.unsubscribe();
-        };
+        return () => authListener?.subscription.unsubscribe();
     }, []);
 
     // Chiudi dropdown se clicchi fuori
@@ -41,8 +39,8 @@ export default function Navbar() {
                 setDropdownOpen(false);
             }
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const handleLogout = async () => {
@@ -58,8 +56,8 @@ export default function Navbar() {
                 WolfFlix
             </Link>
 
-            {/* Menu centrale */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex space-x-6 text-sm">
+            {/* Menu centrale (desktop) */}
+            <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 space-x-6 text-sm">
                 <Link href="/" className="hover-color transition">Home</Link>
                 <Link href="/movie/film" className="hover-color transition">Film</Link>
                 <Link href="/movie/serie-tv" className="hover-color transition">Serie TV</Link>
@@ -105,7 +103,24 @@ export default function Navbar() {
                         Login
                     </Link>
                 )}
+
+                {/* Hamburger mobile */}
+                <button
+                    className="md:hidden text-white focus:outline-none"
+                    onClick={() => setMobileMenuOpen((prev) => !prev)}
+                >
+                    {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+                </button>
             </div>
+
+            {/* Menu mobile */}
+            {mobileMenuOpen && (
+                <div className="absolute top-full left-0 w-full bg-color flex flex-col items-center md:hidden space-y-2 py-2 text-sm z-40">
+                    <Link href="/" className="hover-color w-full text-center py-2" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+                    <Link href="/movie/film" className="hover-color w-full text-center py-2" onClick={() => setMobileMenuOpen(false)}>Film</Link>
+                    <Link href="/movie/serie-tv" className="hover-color w-full text-center py-2" onClick={() => setMobileMenuOpen(false)}>Serie TV</Link>
+                </div>
+            )}
         </nav>
     );
 }

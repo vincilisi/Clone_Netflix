@@ -8,12 +8,16 @@ const nextConfig = {
         hostname: 'image.tmdb.org',
         pathname: '/t/p/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/6.x/avataaars/**', // o '/6.x/**' se vuoi tutti i tipi di avatar
+      },
     ],
   },
   eslint: {
     ignoreDuringBuilds: true, // evita errori di lint durante la build
   },
-  // experimental.appDir è abilitato di default in Next 15, non serve più
 };
 
 module.exports = nextConfig;
