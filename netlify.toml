@@ -1,12 +1,13 @@
 [build]
   command = "yarn build"
   publish = ".next"
+  functions = "netlify/functions"
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
-  NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtweGptdWl5cHp4eGlwZXlkdGNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNTQ3MDgsImV4cCI6MjA3MDkzMDcwOH0.eIZe41uevL0tsiIdBBW3WFeX5gv9KwbbdGfLNmgebSI"
-  NEXT_PUBLIC_SUPABASE_URL = "https://kpxjmuiypzxxipeydtcf.supabase.co"
-  NEXT_PUBLIC_TMDB_API_KEY = "ed4153f187bc4e376c643e5eb93cc810"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = "TUO_SUPABASE_ANON_KEY"
+  NEXT_PUBLIC_SUPABASE_URL = "TUO_SUPABASE_URL"
+  NEXT_PUBLIC_TMDB_API_KEY = "TUO_TMDB_API_KEY"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
