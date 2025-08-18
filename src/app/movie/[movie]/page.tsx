@@ -35,9 +35,7 @@ async function fetchByGenre(endpoint: string, genres: Genre[], isTV = false) {
 }
 
 const MoviePage = async ({ params }: { params: { movie: string } }) => {
-    // ✅ await params prima di usare le proprietà
-    const awaitedParams = await params;
-    const type = awaitedParams.movie;
+    const type = params.movie; // ✅ params è già un oggetto normale
 
     if (!API_KEY) {
         throw new Error('NEXT_PUBLIC_TMDB_API_KEY non è definita nelle variabili d\'ambiente');
