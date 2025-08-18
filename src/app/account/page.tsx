@@ -50,9 +50,7 @@ export default function AccountPage() {
         const file = e.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = () => {
-            setUploadedAvatar(reader.result as string);
-        };
+        reader.onload = () => setUploadedAvatar(reader.result as string);
         reader.readAsDataURL(file);
     };
 
@@ -78,10 +76,11 @@ export default function AccountPage() {
                                 ? "scale-105 border-2 border-red-600 rounded-lg"
                                 : "opacity-70"
                                 }`}
+                            aria-label={`Seleziona profilo ${profile.name || "Nuovo"}`}
                         >
                             <Image
                                 src={profile.avatar}
-                                alt="Avatar"
+                                alt={`Avatar profilo ${profile.name || "Nuovo"}`}
                                 width={120}
                                 height={120}
                                 className="rounded-lg"
@@ -94,6 +93,7 @@ export default function AccountPage() {
                     <button
                         onClick={() => setShowAddProfile(!showAddProfile)}
                         className="flex flex-col items-center justify-center border-2 border-gray-500 border-dashed rounded-lg p-6 hover:border-white"
+                        aria-label="Aggiungi nuovo profilo"
                     >
                         <span className="text-3xl">+</span>
                         <span className="mt-2 text-sm">Aggiungi</span>
@@ -103,8 +103,11 @@ export default function AccountPage() {
                 {/* Sezione aggiungi profilo */}
                 {showAddProfile && (
                     <div className="mt-6 bg-neutral-800 p-4 rounded-lg space-y-4">
-                        <label className="block text-sm text-gray-300">Nome profilo</label>
+                        <label htmlFor="newProfileName" className="block text-sm text-gray-300">
+                            Nome profilo
+                        </label>
                         <input
+                            id="newProfileName"
                             type="text"
                             value={newProfileName}
                             onChange={(e) => setNewProfileName(e.target.value)}
@@ -120,25 +123,49 @@ export default function AccountPage() {
                                     onClick={() => setSelectedAvatar(avatar)}
                                     className={`border-2 rounded-lg ${selectedAvatar === avatar ? "border-red-600" : "border-transparent"
                                         }`}
+                                    aria-label="Seleziona avatar predefinito"
                                 >
-                                    <Image src={avatar} alt="Avatar" width={60} height={60} className="rounded-lg" />
+                                    <Image
+                                        src={avatar}
+                                        alt="Avatar predefinito"
+                                        width={60}
+                                        height={60}
+                                        className="rounded-lg"
+                                    />
                                 </button>
                             ))}
 
                             {/* Upload da dispositivo */}
-                            <label className="flex flex-col items-center justify-center w-16 h-16 border-2 border-gray-500 border-dashed rounded-lg cursor-pointer text-gray-400 hover:border-white hover:text-white">
+                            <label
+                                htmlFor="avatarUpload"
+                                className="flex flex-col items-center justify-center w-16 h-16 border-2 border-gray-500 border-dashed rounded-lg cursor-pointer text-gray-400 hover:border-white hover:text-white"
+                                aria-label="Carica avatar dal dispositivo"
+                            >
                                 <span className="text-2xl">+</span>
-                                <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+                                <input
+                                    id="avatarUpload"
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleUpload}
+                                />
                             </label>
 
                             {uploadedAvatar && (
-                                <Image src={uploadedAvatar} alt="Uploaded" width={60} height={60} className="rounded-lg" />
+                                <Image
+                                    src={uploadedAvatar}
+                                    alt="Avatar caricato"
+                                    width={60}
+                                    height={60}
+                                    className="rounded-lg"
+                                />
                             )}
                         </div>
 
                         <button
                             onClick={handleAddProfile}
                             className="px-6 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition"
+                            aria-label="Aggiungi profilo"
                         >
                             Aggiungi profilo
                         </button>
@@ -151,8 +178,11 @@ export default function AccountPage() {
                 <h2 className="text-xl font-semibold mb-4">Dati account</h2>
                 <form className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="sm:col-span-2">
-                        <label className="block mb-2 text-sm text-gray-300">Nome profilo</label>
+                        <label htmlFor="activeProfileName" className="block mb-2 text-sm text-gray-300">
+                            Nome profilo
+                        </label>
                         <input
+                            id="activeProfileName"
                             type="text"
                             value={activeProfile.name}
                             onChange={(e) => updateProfileName(e.target.value)}
@@ -162,8 +192,11 @@ export default function AccountPage() {
                     </div>
 
                     <div className="relative sm:col-span-2">
-                        <label className="block mb-2 text-sm text-gray-300">Nuova Password</label>
+                        <label htmlFor="newPassword" className="block mb-2 text-sm text-gray-300">
+                            Nuova Password
+                        </label>
                         <input
+                            id="newPassword"
                             type={showPassword ? "text" : "password"}
                             placeholder="Inserisci nuova password"
                             value={newPassword}
@@ -172,25 +205,26 @@ export default function AccountPage() {
                         />
                         <button
                             type="button"
-                            className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-400 hover:text-white"
                             onClick={() => setShowPassword(!showPassword)}
+                            className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                            aria-label={showPassword ? "Nascondi password" : "Mostra password"}
                         >
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                     </div>
 
                     <div className="sm:col-span-2 flex justify-between items-center">
-                        <Link href="./profile">
-                            <button
-                                type="button"
-                                className="px-6 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition"
-                            >
-                                Salva modifiche
-                            </button>
+                        <Link
+                            href="./profile"
+                            className="px-6 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition text-center inline-block"
+                            aria-label="Salva modifiche"
+                        >
+                            Salva modifiche
                         </Link>
                         <button
                             type="button"
                             className="px-6 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition"
+                            aria-label="Logout"
                         >
                             Logout
                         </button>
