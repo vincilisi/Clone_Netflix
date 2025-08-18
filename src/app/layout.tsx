@@ -4,6 +4,11 @@ import Navbar from "./components/Navbar"
 import Footer from "./components/footer"
 import { ThemeProvider } from "./components/ThemeContext";
 
+export const metadata = {
+  title: 'WolfFlix - Home',
+  description: 'Guarda film e serie TV popolari in streaming, aggiornati ogni giorno.',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
