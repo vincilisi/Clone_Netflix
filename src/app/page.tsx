@@ -35,7 +35,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col items-center px-4">
       <h1 className="mt-8">
-        <Image src="/images/titolo.png" alt="netflix-font" width={300} height={100} />
+        <Image src="/images/titolo.png" alt="WolfFlix Hero" width={300} height={100} priority />
       </h1>
       <Vetrina popMovies={popMovies} popTV={popTV} />
     </div>
