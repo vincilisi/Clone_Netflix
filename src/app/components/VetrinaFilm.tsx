@@ -8,13 +8,13 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
-export default function VetrinaFilm({
-    genres,
-    filmsByGenre
-}: {
+type VetrinaProps = {
     genres: Genre[];
-    filmsByGenre: Record<number, Item[]>;
-}) {
+    itemsByGenre: Record<number, Item[]>;
+    isTV?: boolean;
+};
+
+export default function Vetrina({ genres, itemsByGenre, isTV = false }: VetrinaProps) {
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [videoKey, setVideoKey] = useState<string | undefined>();
 
@@ -22,10 +22,15 @@ export default function VetrinaFilm({
     const BASE_URL = 'https://api.themoviedb.org/3';
 
     async function fetchTrailer(item: Item) {
-        const res = await fetch(`${BASE_URL}/movie/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
-        const data = await res.json();
-        const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
-        setVideoKey(trailer ? trailer.key : undefined);
+        try {
+            const endpoint = isTV ? 'tv' : 'movie';
+            const res = await fetch(`${BASE_URL}/${endpoint}/${item.id}/videos?api_key=${API_KEY}&language=it-IT`);
+            const data = await res.json();
+            const trailer = data.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
+            setVideoKey(trailer ? trailer.key : undefined);
+        } catch (err) {
+            console.error('Errore nel fetch del trailer:', err);
+        }
     }
 
     return (
@@ -33,9 +38,12 @@ export default function VetrinaFilm({
             {genres.map((genre) => (
                 <Section
                     key={genre.id}
-                    title={`🎬 ${genre.name}`}
-                    items={filmsByGenre[genre.id] || []}
-                    onItemClick={(item) => { setSelectedItem(item); fetchTrailer(item); }}
+                    title={`${isTV ? '📺' : '🎬'} ${genre.name}`}
+                    items={itemsByGenre[genre.id] || []}
+                    onItemClick={(item) => {
+                        setSelectedItem(item);
+                        fetchTrailer(item);
+                    }}
                 />
             ))}
 
